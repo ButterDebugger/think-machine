@@ -1,6 +1,5 @@
-use indicatif::ProgressBar;
-
 use crate::{batch::Batch, types::Dataset};
+use indicatif::ProgressBar;
 
 #[derive(Debug, Clone)]
 pub struct Trainer {
@@ -71,7 +70,12 @@ impl Trainer {
         for i in 0..epochs {
             self.epoch(steps);
 
-            println!("Epoch {} \t Fitness: {}", i + 1, self.last_fitness);
+            println!(
+                "Epoch {}/{} \t Fitness: {}",
+                i + 1,
+                epochs,
+                self.last_fitness
+            );
         }
     }
 }

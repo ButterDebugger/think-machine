@@ -23,7 +23,7 @@ impl Neuron {
     }
 
     /// Creates a new neuron with random weights and bias
-    pub fn mutate(self, learning_rate: f32) -> Neuron {
+    pub fn mutate(&self, learning_rate: f32) -> Neuron {
         Neuron::new(
             self.weights
                 .iter()

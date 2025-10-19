@@ -1,6 +1,5 @@
-use rand::random;
-
 use crate::{layer::Layer, network::Network, neuron::Neuron, types::Dataset};
+use rand::random;
 
 #[derive(Debug, Clone)]
 pub struct Batch {
@@ -40,7 +39,7 @@ impl Batch {
             let mut fitness = 0.0;
 
             for (inputs, expected) in training_data.iter() {
-                let actual = network.clone().forward(inputs.clone());
+                let actual = network.forward(inputs.clone());
 
                 fitness += cost(expected.to_vec(), actual);
             }

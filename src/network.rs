@@ -17,21 +17,19 @@ impl Network {
         }
     }
 
-    pub fn forward(self, inputs: Inputs) -> Outputs {
-        let mut outputs = inputs;
-
-        for layer in self.hidden_layers {
-            outputs = layer.forward(outputs);
-        }
+    pub fn forward(&self, inputs: Inputs) -> Outputs {
+        let outputs = self.hidden_layers
+            .iter()
+            .fold(inputs, |inputs, layer| layer.forward(inputs));
 
         self.output_layer.forward(outputs)
     }
 
-    pub fn mutate(self, learning_rate: f32) -> Network {
+    pub fn mutate(&self, learning_rate: f32) -> Network {
         let hidden_layers = self
             .hidden_layers
             .iter()
-            .map(|layer| layer.clone().mutate(learning_rate))
+            .map(|layer| layer.mutate(learning_rate))
             .collect();
 
         let output_layer = self.output_layer.mutate(learning_rate);

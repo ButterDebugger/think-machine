@@ -11,33 +11,27 @@ mod types;
 fn main() {
     let mut trainer = Trainer::new(
         1000,
-        0.1,
-        vec![2, 3, 3],
-        1,
+        0.3,
+        vec![3, 4, 3],
+        8,
         vec![
-            (vec![0.0, 0.0], vec![0.0]),
-            (vec![0.0, 1.0], vec![1.0]),
-            (vec![1.0, 0.0], vec![1.0]),
-            (vec![1.0, 1.0], vec![0.0]),
+            (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
+            (vec![0.0, 1.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]),
+            (vec![1.0, 0.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]),
+            (vec![1.0, 1.0], vec![1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]),
         ],
     );
 
-    trainer.train(10, 100);
+    trainer.train(100, 100);
 
-    let net = trainer.batch.eval_fitness(vec![
-        (vec![0.0, 0.0], vec![0.0]),
-        (vec![0.0, 1.0], vec![1.0]),
-        (vec![1.0, 0.0], vec![1.0]),
-        (vec![1.0, 1.0], vec![0.0]),
-    ]);
+    let model = trainer.batch.networks[0].clone();
 
     // println!("{:#?}", net.iter().map(|l| l.0).collect::<Vec<_>>());
 
     // Test the best network
     println!();
-    println!("best {:#?}", net[0].0);
-    println!("0 xor 0 => {:#?}", net[0].1.clone().forward(vec![0.0, 0.0]));
-    println!("0 xor 1 => {:#?}", net[0].1.clone().forward(vec![0.0, 1.0]));
-    println!("1 xor 0 => {:#?}", net[0].1.clone().forward(vec![1.0, 0.0]));
-    println!("1 xor 1 => {:#?}", net[0].1.clone().forward(vec![1.0, 1.0]));
+    println!("a=0 b=0 => {:#?}", model.clone().forward(vec![0.0, 0.0]));
+    println!("a=0 b=1 => {:#?}", model.clone().forward(vec![0.0, 1.0]));
+    println!("a=1 b=0 => {:#?}", model.clone().forward(vec![1.0, 0.0]));
+    println!("a=1 b=1 => {:#?}", model.clone().forward(vec![1.0, 1.0]));
 }
