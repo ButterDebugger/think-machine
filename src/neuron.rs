@@ -1,6 +1,5 @@
-use rand::random;
-
 use crate::types::Inputs;
+use rand::random;
 
 #[derive(Debug, Clone)]
 pub struct Neuron {
