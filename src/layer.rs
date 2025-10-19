@@ -1,16 +1,30 @@
-use crate::neuron::Neuron;
+use crate::{
+    neuron::Neuron,
+    types::{Inputs, Outputs},
+};
 
-pub(crate) struct Layer(Vec<Neuron>);
+#[derive(Debug, Clone)]
+pub struct Layer(Vec<Neuron>);
 
 impl Layer {
-    pub(crate) fn new(neurons: Vec<Neuron>) -> Self {
+    pub fn new(neurons: Vec<Neuron>) -> Self {
         Self(neurons)
     }
 
-    pub(crate) fn forward(&self, inputs: Vec<f32>) -> Vec<f32> {
+    pub fn forward(self, inputs: Inputs) -> Outputs {
         self.0
             .iter()
-            .map(|neuron| neuron.forward(&inputs.clone()))
+            .map(|neuron| neuron.forward(inputs.clone()))
             .collect()
+    }
+
+    pub fn mutate(self, learning_rate: f32) -> Layer {
+        let neurons = self
+            .0
+            .iter()
+            .map(|neuron| neuron.clone().mutate(learning_rate))
+            .collect::<Vec<Neuron>>();
+
+        Layer::new(neurons)
     }
 }

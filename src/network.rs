@@ -1,29 +1,41 @@
-use crate::layer::Layer;
+use crate::{
+    layer::Layer,
+    types::{Inputs, Outputs},
+};
 
-pub(crate) struct Network {
-    pub(crate) hidden_layers: Vec<Layer>,
-    pub(crate) output_layer: Layer,
+#[derive(Debug, Clone)]
+pub struct Network {
+    pub hidden_layers: Vec<Layer>,
+    pub output_layer: Layer,
 }
 
 impl Network {
-    pub(crate) fn new(output_layer: Layer) -> Self {
+    pub fn new(hidden_layers: Vec<Layer>, output_layer: Layer) -> Self {
         Self {
-            hidden_layers: Vec::new(),
+            hidden_layers,
             output_layer,
         }
     }
 
-    pub(crate) fn forward(&mut self, input: Vec<f32>) -> Vec<f32> {
-        let mut output = input;
+    pub fn forward(self, inputs: Inputs) -> Outputs {
+        let mut outputs = inputs;
 
-        for layer in &mut self.hidden_layers {
-            output = layer.forward(output);
+        for layer in self.hidden_layers {
+            outputs = layer.forward(outputs);
         }
 
-        self.output_layer.forward(output)
+        self.output_layer.forward(outputs)
     }
 
-    pub(crate) fn add_hidden_layer(&mut self, layer: Layer) {
-        self.hidden_layers.push(layer);
+    pub fn mutate(self, learning_rate: f32) -> Network {
+        let hidden_layers = self
+            .hidden_layers
+            .iter()
+            .map(|layer| layer.clone().mutate(learning_rate))
+            .collect();
+
+        let output_layer = self.output_layer.mutate(learning_rate);
+
+        Network::new(hidden_layers, output_layer)
     }
 }

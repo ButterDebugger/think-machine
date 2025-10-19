@@ -1,14 +1,17 @@
-pub(crate) struct Neuron {
-    pub(crate) weights: Vec<f32>,
-    pub(crate) bias: f32,
+use crate::types::Inputs;
+
+#[derive(Debug, Clone)]
+pub struct Neuron {
+    pub weights: Vec<f32>,
+    pub bias: f32,
 }
 
 impl Neuron {
-    pub(crate) fn new(weights: Vec<f32>, bias: f32) -> Self {
+    pub fn new(weights: Vec<f32>, bias: f32) -> Self {
         Self { weights, bias }
     }
 
-    pub(crate) fn forward(&self, inputs: &[f32]) -> f32 {
+    pub fn forward(&self, inputs: Inputs) -> f32 {
         sigmoid(
             inputs
                 .iter()
@@ -19,15 +22,16 @@ impl Neuron {
         )
     }
 
-    // pub(crate) fn forward(&self, inputs: &[f32]) -> f32 {
-    //     let mut sum = 0.0;
-
-    //     for (i, &weight) in self.weights.iter().enumerate() {
-    //         sum += weight * inputs[i];
-    //     }
-
-    //     sum + self.bias
-    // }
+    /// Creates a new neuron with random weights and bias
+    pub fn mutate(self, learning_rate: f32) -> Neuron {
+        Neuron::new(
+            self.weights
+                .iter()
+                .map(|weight| weight + (rand::random::<f32>() - 0.5) * learning_rate)
+                .collect(),
+            self.bias + (rand::random::<f32>() - 0.5) * learning_rate,
+        )
+    }
 }
 
 // Activation function
