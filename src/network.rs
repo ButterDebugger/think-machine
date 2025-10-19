@@ -18,7 +18,8 @@ impl Network {
     }
 
     pub fn forward(&self, inputs: Inputs) -> Outputs {
-        let outputs = self.hidden_layers
+        let outputs = self
+            .hidden_layers
             .iter()
             .fold(inputs, |inputs, layer| layer.forward(inputs));
 

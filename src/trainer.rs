@@ -1,4 +1,4 @@
-use crate::{batch::Batch, types::Dataset};
+use crate::{batch::Batch, network::Network, types::Dataset};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::time::Instant;
 
@@ -6,10 +6,8 @@ use std::time::Instant;
 pub struct Trainer {
     batch_size: u64,
     learning_rate: f32,
-    hidden_layer_sizes: Vec<u64>,
-    output_size: u64,
     training_data: Dataset,
-    last_fitness: f32,
+    current_fitness: f32,
     pub batch: Batch,
 }
 
@@ -24,33 +22,38 @@ impl Trainer {
         Trainer {
             batch_size,
             learning_rate,
-            hidden_layer_sizes,
-            output_size,
             training_data,
-            last_fitness: 0.0,
-            batch: Batch::new(batch_size),
+            current_fitness: 0.0,
+            batch: Batch::new_with_population(batch_size, hidden_layer_sizes, output_size),
         }
     }
 
     fn step(&mut self) {
-        // Populate the batch and evaluate fitness
-        self.batch
-            .populate(self.hidden_layer_sizes.clone(), self.output_size);
-
-        let sorted_batch = self.batch.clone().eval_fitness(self.training_data.clone());
+        // Evaluate fitness of the batch
+        let fitted_batch = self.batch.eval_fitness(self.training_data.clone());
 
         // Update the last fitness
-        self.last_fitness = sorted_batch[0].0;
+        self.current_fitness = fitted_batch[0].0;
 
         // Create a new batch with the top half of the batch and their mutations
-        let mut new_batch = Batch::new(self.batch_size);
+        let top_count = (self.batch_size / 2) as usize;
+        let mutate_count = self.batch_size as usize - top_count;
 
-        for fitted_network in sorted_batch.iter().take(self.batch_size as usize / 2usize) {
-            new_batch.add_network(fitted_network.1.clone());
-            new_batch.add_network(fitted_network.1.clone().mutate(self.learning_rate));
-        }
+        let mut new_networks: Vec<Network> = fitted_batch
+            .iter()
+            .take(top_count)
+            .map(|(_, network)| network.clone())
+            .collect();
 
-        self.batch = new_batch;
+        new_networks.extend(
+            fitted_batch
+                .iter()
+                .take(mutate_count)
+                .map(|(_, network)| network.mutate(self.learning_rate)),
+        );
+
+        // Store the new batch of networks
+        self.batch = Batch::new_with_networks(new_networks);
     }
 
     fn epoch(&mut self, steps: u64) {
@@ -83,7 +86,7 @@ impl Trainer {
                 i + 1,
                 epochs,
                 steps as f32 / elapsed.as_secs_f32(),
-                self.last_fitness,
+                self.current_fitness,
             );
         }
     }
