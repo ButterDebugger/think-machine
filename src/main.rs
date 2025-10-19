@@ -10,7 +10,7 @@ mod types;
 
 fn main() {
     let mut trainer = Trainer::new(
-        1000,
+        200,
         0.3,
         vec![3, 4, 3],
         8,
@@ -22,7 +22,7 @@ fn main() {
         ],
     );
 
-    trainer.train(100, 100);
+    trainer.train(500, 100);
 
     let model = trainer.batch.networks[0].clone();
 

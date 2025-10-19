@@ -1,5 +1,6 @@
 use crate::{batch::Batch, types::Dataset};
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
+use std::time::Instant;
 
 #[derive(Debug, Clone)]
 pub struct Trainer {
@@ -53,7 +54,12 @@ impl Trainer {
     }
 
     fn epoch(&mut self, steps: u64) {
+        let sty =
+            ProgressStyle::with_template("[{elapsed_precise}] {bar:30.cyan/blue} {pos}/{len} ")
+                .unwrap()
+                .progress_chars("#>-");
         let progress = ProgressBar::new(steps);
+        progress.set_style(sty);
 
         for _ in 0..steps {
             // Step the batch
@@ -68,13 +74,16 @@ impl Trainer {
 
     pub fn train(&mut self, epochs: u64, steps: u64) {
         for i in 0..epochs {
+            let now = Instant::now();
             self.epoch(steps);
+            let elapsed = now.elapsed();
 
             println!(
-                "Epoch {}/{} \t Fitness: {}",
+                "Epoch {}/{} \tRate {}/s \tFitness {}",
                 i + 1,
                 epochs,
-                self.last_fitness
+                steps as f32 / elapsed.as_secs_f32(),
+                self.last_fitness,
             );
         }
     }
