@@ -1,4 +1,4 @@
-use crate::{batch::Batch, network::Network, types::Dataset};
+use crate::{batch::Batch, network::Network, types::{Dataset, NetworkConfig}};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::time::Instant;
 
@@ -15,8 +15,7 @@ impl Trainer {
     pub fn new(
         batch_size: u64,
         learning_rate: f32,
-        hidden_layer_sizes: Vec<u64>,
-        output_size: u64,
+        network_config: NetworkConfig,
         training_data: Dataset,
     ) -> Trainer {
         Trainer {
@@ -24,7 +23,7 @@ impl Trainer {
             learning_rate,
             training_data,
             current_fitness: 0.0,
-            batch: Batch::new_with_population(batch_size, hidden_layer_sizes, output_size),
+            batch: Batch::new_with_population(batch_size, network_config),
         }
     }
 

@@ -1,4 +1,9 @@
-use crate::{layer::Layer, network::Network, neuron::Neuron, types::Dataset};
+use crate::{
+    layer::Layer,
+    network::Network,
+    neuron::Neuron,
+    types::{Dataset, NetworkConfig},
+};
 use rand::random;
 
 #[derive(Debug, Clone)]
@@ -11,10 +16,10 @@ impl Batch {
         Self { networks }
     }
 
-    pub fn new_with_population(size: u64, hidden_layer_sizes: Vec<u64>, output_size: u64) -> Self {
+    pub fn new_with_population(batch_size: u64, network_config: NetworkConfig) -> Self {
         Self {
-            networks: (0..size)
-                .map(|_| create_random_network(hidden_layer_sizes.clone(), output_size))
+            networks: (0..batch_size)
+                .map(|_| create_random_network(network_config.clone()))
                 .collect::<Vec<Network>>(),
         }
     }
@@ -60,20 +65,48 @@ fn cost(expected: Vec<f32>, actual: Vec<f32>) -> f32 {
         .sum()
 }
 
-pub fn create_random_network(hidden_layer_sizes: Vec<u64>, output_size: u64) -> Network {
+/// Creates a random network with the given configuration
+pub fn create_random_network(network_config: NetworkConfig) -> Network {
+    let (input_size, hidden_layer_sizes, output_size) = network_config;
+
+    // Keep track of the previous input size
+    let mut previous_input_size = input_size;
+
+    // Create the hidden layers
     let hidden_layers = hidden_layer_sizes
         .iter()
-        .map(|size| create_random_layer(*size))
+        .map(|size| {
+            // Create the layer with the previous input size
+            let layer = create_random_layer(previous_input_size, *size);
+
+            // Update the previous input size
+            previous_input_size = *size;
+
+            // Return the layer
+            layer
+        })
         .collect::<Vec<Layer>>();
 
-    let output_layer = create_random_layer(output_size);
+    // Create the output layer
+    let output_layer = create_random_layer(previous_input_size, output_size);
 
+    // Create the network
     Network::new(hidden_layers, output_layer)
 }
-fn create_random_layer(size: u64) -> Layer {
-    Layer::new((0..size).map(|_| create_random_neuron()).collect())
+
+/// Creates a random layer with the given size and input size
+fn create_random_layer(input_size: u64, size: u64) -> Layer {
+    Layer::new(
+        (0..size)
+            .map(|_| create_random_neuron(input_size))
+            .collect(),
+    )
 }
 
-fn create_random_neuron() -> Neuron {
-    Neuron::new(vec![random::<f32>(), random::<f32>()], random::<f32>())
+/// Creates a random neuron with the given input size
+fn create_random_neuron(input_size: u64) -> Neuron {
+    Neuron::new(
+        (0..input_size).map(|_| random::<f32>()).collect(),
+        random::<f32>(),
+    )
 }

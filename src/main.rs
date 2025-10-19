@@ -10,10 +10,9 @@ mod types;
 
 fn main() {
     let mut trainer = Trainer::new(
-        200,
+        100,
         0.3,
-        vec![3, 4, 3],
-        8,
+        (2, vec![3, 4, 3], 8),
         vec![
             (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
             (vec![0.0, 1.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]),
@@ -22,9 +21,12 @@ fn main() {
         ],
     );
 
-    trainer.train(500, 100);
+    trainer.train(50, 100);
 
     let model = trainer.batch.networks[0].clone();
+
+    println!();
+    println!("Model {:#?}", model);
 
     // println!("{:#?}", net.iter().map(|l| l.0).collect::<Vec<_>>());
 
