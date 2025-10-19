@@ -1,8 +1,5 @@
-use rand::random;
-
 use crate::{
     layer::Layer,
-    neuron::Neuron,
     types::{Inputs, NetworkConfig, Outputs},
 };
 
@@ -32,7 +29,7 @@ impl Network {
             .iter()
             .map(|size| {
                 // Create the layer with the previous input size
-                let layer = create_random_layer(previous_input_size, *size);
+                let layer = Layer::new_with_random_values(previous_input_size, *size);
 
                 // Update the previous input size
                 previous_input_size = *size;
@@ -43,10 +40,13 @@ impl Network {
             .collect::<Vec<Layer>>();
 
         // Create the output layer
-        let output_layer = create_random_layer(previous_input_size, output_size);
+        let output_layer = Layer::new_with_random_values(previous_input_size, output_size);
 
         // Create the network
-        Network::new(hidden_layers, output_layer)
+        Self {
+            hidden_layers,
+            output_layer,
+        }
     }
 
     pub fn forward(&self, inputs: Inputs) -> Outputs {
@@ -69,21 +69,4 @@ impl Network {
 
         Network::new(hidden_layers, output_layer)
     }
-}
-
-/// Creates a random layer with the given size and input size
-fn create_random_layer(input_size: u64, size: u64) -> Layer {
-    Layer::new(
-        (0..size)
-            .map(|_| create_random_neuron(input_size))
-            .collect(),
-    )
-}
-
-/// Creates a random neuron with the given input size
-fn create_random_neuron(input_size: u64) -> Neuron {
-    Neuron::new(
-        (0..input_size).map(|_| random::<f32>()).collect(),
-        random::<f32>(),
-    )
 }

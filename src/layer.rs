@@ -11,6 +11,15 @@ impl Layer {
         Self(neurons)
     }
 
+    /// Creates a random layer with the given size and input size
+    pub fn new_with_random_values(input_size: u64, size: u64) -> Layer {
+        Self(
+            (0..size)
+                .map(|_| Neuron::new_with_random_values(input_size))
+                .collect(),
+        )
+    }
+
     pub fn forward(&self, inputs: Inputs) -> Outputs {
         self.0
             .iter()

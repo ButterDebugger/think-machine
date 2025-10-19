@@ -1,3 +1,5 @@
+use rand::random;
+
 use crate::types::Inputs;
 
 #[derive(Debug, Clone)]
@@ -9,6 +11,14 @@ pub struct Neuron {
 impl Neuron {
     pub fn new(weights: Vec<f32>, bias: f32) -> Self {
         Self { weights, bias }
+    }
+
+    /// Creates a random neuron with the given input size
+    pub fn new_with_random_values(input_size: u64) -> Self {
+        Self {
+            weights: (0..input_size).map(|_| random::<f32>()).collect(),
+            bias: random::<f32>(),
+        }
     }
 
     pub fn forward(&self, inputs: Inputs) -> f32 {
