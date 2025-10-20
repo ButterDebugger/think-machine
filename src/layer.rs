@@ -12,7 +12,7 @@ impl Layer {
     }
 
     /// Creates a random layer with the given size and input size
-    pub fn new_with_random_values(input_size: u64, size: u64) -> Layer {
+    pub fn new_with_random_values(input_size: u64, size: u64) -> Self {
         Self(
             (0..size)
                 .map(|_| Neuron::new_with_random_values(input_size))
