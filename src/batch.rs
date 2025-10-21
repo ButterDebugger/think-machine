@@ -24,10 +24,10 @@ impl Batch {
     /// Evaluates the fitness of a batch of networks
     /// # Returns
     /// A sorted vector of networks with the best fitness
-    pub fn eval_fitness(&self, training_data: Dataset) -> Vec<(f32, Network)> {
+    pub fn eval_fitness(&mut self, training_data: Dataset) -> Vec<(f32, Network)> {
         let mut top_networks: Vec<(f32, Network)> = Vec::new();
 
-        for network in &self.networks {
+        for network in &mut self.networks {
             // Evaluate the fitness of the network
             let fitness = network.fitness(training_data.clone());
 

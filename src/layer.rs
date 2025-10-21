@@ -4,36 +4,43 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
-pub struct Layer(Vec<Neuron>);
+pub struct Layer {
+    neurons: Vec<Neuron>,
+    input_size: u64,
+}
 
 impl Layer {
-    pub fn new(neurons: Vec<Neuron>) -> Self {
-        Self(neurons)
+    pub fn new(input_size: u64, neurons: Vec<Neuron>) -> Self {
+        Self {
+            neurons,
+            input_size,
+        }
     }
 
     /// Creates a random layer with the given size and input size
     pub fn new_with_random_values(input_size: u64, size: u64) -> Self {
-        Self(
-            (0..size)
+        Self {
+            neurons: (0..size)
                 .map(|_| Neuron::new_with_random_values(input_size))
                 .collect(),
-        )
+            input_size,
+        }
     }
 
-    pub fn forward(&self, inputs: Inputs) -> Outputs {
-        self.0
-            .iter()
+    pub fn forward(&mut self, inputs: Inputs) -> Outputs {
+        self.neurons
+            .iter_mut()
             .map(|neuron| neuron.forward(inputs.clone()))
             .collect()
     }
 
-    pub fn mutate(&self, learning_rate: f32) -> Layer {
-        let neurons = self
-            .0
-            .iter()
-            .map(|neuron| neuron.mutate(learning_rate))
-            .collect::<Vec<Neuron>>();
+    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+        // Mutate each neuron
+        self.neurons.iter_mut().for_each(|neuron| {
+            neuron.mutate(learning_rate);
+        });
 
-        Layer::new(neurons)
+        // Return the layer
+        self
     }
 }

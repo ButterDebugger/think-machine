@@ -49,12 +49,11 @@ impl Trainer {
             .map(|(_, network)| network.clone())
             .collect();
 
-        new_networks.extend(
-            fitted_batch
-                .iter()
-                .take(mutate_count)
-                .map(|(_, network)| network.mutate(self.learning_rate)),
-        );
+        new_networks.extend(fitted_batch.iter().take(mutate_count).map(|(_, network)| {
+            let mut cloned = network.clone();
+            cloned.mutate(self.learning_rate);
+            cloned
+        }));
 
         // Store the new batch of networks
         self.batch = Batch::new_with_networks(new_networks);

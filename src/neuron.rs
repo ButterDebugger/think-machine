@@ -5,11 +5,17 @@ use rand::random;
 pub struct Neuron {
     pub weights: Vec<f32>,
     pub bias: f32,
+    /// Cached activation value
+    pub activation: f32,
 }
 
 impl Neuron {
     pub fn new(weights: Vec<f32>, bias: f32) -> Self {
-        Self { weights, bias }
+        Self {
+            weights,
+            bias,
+            activation: 0.0,
+        }
     }
 
     /// Creates a random neuron with the given input size
@@ -17,29 +23,40 @@ impl Neuron {
         Self {
             weights: (0..input_size).map(|_| random::<f32>()).collect(),
             bias: random::<f32>(),
+            activation: 0.0,
         }
     }
 
-    pub fn forward(&self, inputs: Inputs) -> f32 {
-        sigmoid(
+    pub fn forward(&mut self, inputs: Inputs) -> f32 {
+        // Calculate the weight sum and run it through the activation function
+        let activation = sigmoid(
             inputs
                 .iter()
                 .zip(self.weights.iter())
                 .map(|(input, weight)| input * weight)
                 .sum::<f32>()
                 + self.bias,
-        )
+        );
+
+        // Cache the activation value
+        self.activation = activation;
+
+        // Return the activation value
+        activation
     }
 
-    /// Creates a new neuron with random weights and bias
-    pub fn mutate(&self, learning_rate: f32) -> Neuron {
-        Neuron::new(
-            self.weights
-                .iter()
-                .map(|weight| weight + (rand::random::<f32>() - 0.5) * learning_rate)
-                .collect(),
-            self.bias + (rand::random::<f32>() - 0.5) * learning_rate,
-        )
+    /// Mutates the neuron with random weights and bias
+    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+        // Mutate the weights
+        self.weights.iter_mut().for_each(|weight| {
+            *weight += (rand::random::<f32>() - 0.5) * learning_rate;
+        });
+
+        // Mutate the bias
+        self.bias += (rand::random::<f32>() - 0.5) * learning_rate;
+
+        // Return the neuron
+        self
     }
 }
 

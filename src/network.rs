@@ -50,7 +50,7 @@ impl Network {
     }
 
     /// Calculates the fitness of the network
-    pub fn fitness(&self, training_data: Dataset) -> f32 {
+    pub fn fitness(&mut self, training_data: Dataset) -> f32 {
         let mut fitness = 0.0;
 
         for (inputs, expected) in training_data.iter() {
@@ -63,25 +63,26 @@ impl Network {
         fitness / training_data.len() as f32
     }
 
-    pub fn forward(&self, inputs: Inputs) -> Outputs {
+    pub fn forward(&mut self, inputs: Inputs) -> Outputs {
         let outputs = self
             .hidden_layers
-            .iter()
+            .iter_mut()
             .fold(inputs, |inputs, layer| layer.forward(inputs));
 
         self.output_layer.forward(outputs)
     }
 
-    pub fn mutate(&self, learning_rate: f32) -> Network {
-        let hidden_layers = self
-            .hidden_layers
-            .iter()
-            .map(|layer| layer.mutate(learning_rate))
-            .collect();
+    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+        // Mutate the hidden layers
+        self.hidden_layers.iter_mut().for_each(|layer| {
+            layer.mutate(learning_rate);
+        });
 
-        let output_layer = self.output_layer.mutate(learning_rate);
+        // Mutate the output layer
+        self.output_layer.mutate(learning_rate);
 
-        Network::new(hidden_layers, output_layer)
+        // Return the network
+        self
     }
 }
 
@@ -90,5 +91,5 @@ fn cost(expected: Vec<f32>, actual: Vec<f32>) -> f32 {
         .iter()
         .zip(actual.iter())
         .map(|(a, b)| (a - b).powi(2))
-        .sum()
+        .sum::<f32>()
 }
