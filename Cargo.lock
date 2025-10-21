@@ -790,6 +790,7 @@ dependencies = [
 name = "think-machine"
 version = "0.1.0"
 dependencies = [
+ "console",
  "indicatif",
  "rand",
  "wgpu",

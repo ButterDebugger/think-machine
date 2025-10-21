@@ -1,4 +1,9 @@
-use crate::{batch::Batch, network::Network, types::{Dataset, NetworkConfig}};
+use crate::{
+    batch::Batch,
+    network::Network,
+    types::{Dataset, NetworkConfig},
+};
+use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::time::Instant;
 
@@ -22,7 +27,7 @@ impl Trainer {
             batch_size,
             learning_rate,
             training_data,
-            current_fitness: 0.0,
+            current_fitness: f32::MAX,
             batch: Batch::new_with_population(batch_size, network_config),
         }
     }
@@ -75,18 +80,37 @@ impl Trainer {
     }
 
     pub fn train(&mut self, epochs: u64, steps: u64) {
+        let mut last_fitness = self.current_fitness;
+
         for i in 0..epochs {
             let now = Instant::now();
             self.epoch(steps);
             let elapsed = now.elapsed();
 
             println!(
-                "Epoch {}/{} \tRate {}/s \tFitness {}",
+                "Epoch {}/{} \tRate {}/s \tFitness {} {}",
                 i + 1,
                 epochs,
                 steps as f32 / elapsed.as_secs_f32(),
                 self.current_fitness,
+                if last_fitness > self.current_fitness {
+                    style(format!(
+                        "-{:.2}%",
+                        (1.0 - self.current_fitness / last_fitness) * 100.0
+                    ))
+                    .green()
+                } else if last_fitness == self.current_fitness {
+                    style("±0.00%".to_string()).yellow()
+                } else {
+                    style(format!(
+                        "+{:.2}%",
+                        (self.current_fitness / last_fitness - 1.0) * 100.0
+                    ))
+                    .red()
+                }
             );
+
+            last_fitness = self.current_fitness;
         }
     }
 }

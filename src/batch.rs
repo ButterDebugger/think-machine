@@ -29,16 +29,7 @@ impl Batch {
 
         for network in &self.networks {
             // Evaluate the fitness of the network
-            let mut fitness = 0.0;
-
-            for (inputs, expected) in training_data.iter() {
-                let actual = network.forward(inputs.clone());
-
-                fitness += cost(expected.to_vec(), actual);
-            }
-
-            // Average the fitness
-            fitness /= training_data.len() as f32;
+            let fitness = network.fitness(training_data.clone());
 
             // Insert the network into the correct position using binary search
             let insert_pos =
@@ -52,12 +43,4 @@ impl Batch {
 
         top_networks
     }
-}
-
-fn cost(expected: Vec<f32>, actual: Vec<f32>) -> f32 {
-    expected
-        .iter()
-        .zip(actual.iter())
-        .map(|(a, b)| (a - b).powi(2))
-        .sum()
 }

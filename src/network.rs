@@ -1,6 +1,6 @@
 use crate::{
     layer::Layer,
-    types::{Inputs, NetworkConfig, Outputs},
+    types::{Dataset, Inputs, NetworkConfig, Outputs},
 };
 
 #[derive(Debug, Clone)]
@@ -49,6 +49,20 @@ impl Network {
         }
     }
 
+    /// Calculates the fitness of the network
+    pub fn fitness(&self, training_data: Dataset) -> f32 {
+        let mut fitness = 0.0;
+
+        for (inputs, expected) in training_data.iter() {
+            let actual = self.forward(inputs.clone());
+
+            fitness += cost(expected.to_vec(), actual);
+        }
+
+        // Return the average fitness
+        fitness / training_data.len() as f32
+    }
+
     pub fn forward(&self, inputs: Inputs) -> Outputs {
         let outputs = self
             .hidden_layers
@@ -69,4 +83,12 @@ impl Network {
 
         Network::new(hidden_layers, output_layer)
     }
+}
+
+fn cost(expected: Vec<f32>, actual: Vec<f32>) -> f32 {
+    expected
+        .iter()
+        .zip(actual.iter())
+        .map(|(a, b)| (a - b).powi(2))
+        .sum()
 }
