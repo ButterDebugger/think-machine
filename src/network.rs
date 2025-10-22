@@ -93,3 +93,11 @@ fn cost(expected: Vec<f32>, actual: Vec<f32>) -> f32 {
         .map(|(a, b)| (a - b).powi(2))
         .sum::<f32>()
 }
+
+fn cost_derivatives(expected: Vec<f32>, actual: Vec<f32>) -> Vec<f32> {
+    expected
+        .iter()
+        .zip(actual.iter())
+        .map(|(a, b)| 2.0 * (a - b))
+        .collect::<Vec<f32>>()
+}

@@ -5,6 +5,8 @@ use rand::random;
 pub struct Neuron {
     pub weights: Vec<f32>,
     pub bias: f32,
+    /// Cached weight sum
+    pub weight_sum: f32,
     /// Cached activation value
     pub activation: f32,
 }
@@ -14,6 +16,7 @@ impl Neuron {
         Self {
             weights,
             bias,
+            weight_sum: 0.0,
             activation: 0.0,
         }
     }
@@ -23,22 +26,25 @@ impl Neuron {
         Self {
             weights: (0..input_size).map(|_| random::<f32>()).collect(),
             bias: random::<f32>(),
+            weight_sum: 0.0,
             activation: 0.0,
         }
     }
 
     pub fn forward(&mut self, inputs: Inputs) -> f32 {
-        // Calculate the weight sum and run it through the activation function
-        let activation = sigmoid(
-            inputs
-                .iter()
-                .zip(self.weights.iter())
-                .map(|(input, weight)| input * weight)
-                .sum::<f32>()
-                + self.bias,
-        );
+        // Calculate the weight sum and cache it
+        let weight_sum = inputs
+            .iter()
+            .zip(self.weights.iter())
+            .map(|(input, weight)| input * weight)
+            .sum::<f32>()
+            + self.bias;
 
-        // Cache the activation value
+        self.weight_sum = weight_sum;
+
+        // Calculate the activation value and cache it
+        let activation = sigmoid(weight_sum);
+
         self.activation = activation;
 
         // Return the activation value
