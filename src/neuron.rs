@@ -51,18 +51,29 @@ impl Neuron {
         activation
     }
 
-    /// Mutates the neuron with random weights and bias
-    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-        // Mutate the weights
-        self.weights.iter_mut().for_each(|weight| {
-            *weight += (rand::random::<f32>() - 0.5) * learning_rate;
-        });
+    // /// Mutates the neuron with random weights and bias
+    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+    //     // Mutate the weights
+    //     self.weights.iter_mut().for_each(|weight| {
+    //         *weight += (rand::random::<f32>() - 0.5) * learning_rate;
+    //     });
 
-        // Mutate the bias
-        self.bias += (rand::random::<f32>() - 0.5) * learning_rate;
+    //     // Mutate the bias
+    //     self.bias += (rand::random::<f32>() - 0.5) * learning_rate;
 
-        // Return the neuron
-        self
+    //     // Return the neuron
+    //     self
+    // }
+
+    /// Updates the neuron's weights and bias based on gradients
+    pub fn update_weights(&mut self, inputs: &Inputs, gradient: f32, learning_rate: f32) {
+        // Update weights: w = w - learning_rate * gradient * input
+        for (weight, input) in self.weights.iter_mut().zip(inputs.iter()) {
+            *weight -= learning_rate * gradient * input;
+        }
+
+        // Update bias: b = b - learning_rate * gradient
+        self.bias -= learning_rate * gradient;
     }
 }
 
@@ -72,7 +83,7 @@ fn sigmoid(x: f32) -> f32 {
 }
 
 /// Derivative of the sigmoid activation function
-fn sigmoid_derivative(x: f32) -> f32 {
+pub fn sigmoid_derivative(x: f32) -> f32 {
     let activation = sigmoid(x);
     activation * (1.0 - activation)
 }

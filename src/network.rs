@@ -72,16 +72,44 @@ impl Network {
         self.output_layer.forward(outputs)
     }
 
-    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-        // Mutate the hidden layers
-        self.hidden_layers.iter_mut().for_each(|layer| {
-            layer.mutate(learning_rate);
-        });
+    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+    //     // Mutate the hidden layers
+    //     self.hidden_layers.iter_mut().for_each(|layer| {
+    //         layer.mutate(learning_rate);
+    //     });
 
-        // Mutate the output layer
-        self.output_layer.mutate(learning_rate);
+    //     // Mutate the output layer
+    //     self.output_layer.mutate(learning_rate);
 
-        // Return the network
+    //     // Return the network
+    //     self
+    // }
+
+    pub fn backward(&mut self, inputs: Inputs, expected: Outputs, learning_rate: f32) -> &mut Self {
+        // Forward pass and collect layer inputs
+        let mut layer_inputs = vec![inputs.clone()];
+        let mut current_input = inputs;
+
+        for layer in &mut self.hidden_layers {
+            current_input = layer.forward(current_input);
+            layer_inputs.push(current_input.clone());
+        }
+
+        let outputs = self.output_layer.forward(current_input);
+        let mut errors = cost_derivatives(expected, outputs);
+
+        // Backpropagate through output layer
+        errors = self.output_layer.backward(
+            &layer_inputs[self.hidden_layers.len()],
+            &errors,
+            learning_rate,
+        );
+
+        // Backpropagate through hidden layers in reverse
+        for (i, layer) in self.hidden_layers.iter_mut().enumerate().rev() {
+            errors = layer.backward(&layer_inputs[i], &errors, learning_rate);
+        }
+
         self
     }
 }
@@ -98,6 +126,6 @@ fn cost_derivatives(expected: Vec<f32>, actual: Vec<f32>) -> Vec<f32> {
     expected
         .iter()
         .zip(actual.iter())
-        .map(|(a, b)| 2.0 * (a - b))
+        .map(|(a, b)| 2.0 * (b - a))
         .collect::<Vec<f32>>()
 }

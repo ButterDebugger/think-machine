@@ -33,30 +33,37 @@ impl Trainer {
     }
 
     fn step(&mut self) {
+        // Train each network on all training data
+        for network in &mut self.batch.networks {
+            for (inputs, expected) in &self.training_data {
+                network.backward(inputs.clone(), expected.clone(), self.learning_rate);
+            }
+        }
+
         // Evaluate fitness of the batch
         let fitted_batch = self.batch.eval_fitness(self.training_data.clone());
 
-        // Update the last fitness
+        // Update the current fitness (best network's fitness)
         self.current_fitness = fitted_batch[0].0;
 
-        // Create a new batch with the top half of the batch and their mutations
-        let top_count = (self.batch_size / 2) as usize;
-        let mutate_count = self.batch_size as usize - top_count;
+        // // Create a new batch with the top half of the batch and their mutations
+        // let top_count = (self.batch_size / 2) as usize;
+        // let mutate_count = self.batch_size as usize - top_count;
 
-        let mut new_networks: Vec<Network> = fitted_batch
-            .iter()
-            .take(top_count)
-            .map(|(_, network)| network.clone())
-            .collect();
+        // let mut new_networks: Vec<Network> = fitted_batch
+        //     .iter()
+        //     .take(top_count)
+        //     .map(|(_, network)| network.clone())
+        //     .collect();
 
-        new_networks.extend(fitted_batch.iter().take(mutate_count).map(|(_, network)| {
-            let mut cloned = network.clone();
-            cloned.mutate(self.learning_rate);
-            cloned
-        }));
+        // new_networks.extend(fitted_batch.iter().take(mutate_count).map(|(_, network)| {
+        //     let mut cloned = network.clone();
+        //     cloned.mutate(self.learning_rate);
+        //     cloned
+        // }));
 
-        // Store the new batch of networks
-        self.batch = Batch::new_with_networks(new_networks);
+        // // Store the new batch of networks
+        // self.batch = Batch::new_with_networks(new_networks);
     }
 
     fn epoch(&mut self, steps: u64) {

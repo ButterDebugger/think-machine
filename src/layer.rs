@@ -1,5 +1,5 @@
 use crate::{
-    neuron::Neuron,
+    neuron::{Neuron, sigmoid_derivative},
     types::{Inputs, Outputs},
 };
 
@@ -34,13 +34,40 @@ impl Layer {
             .collect()
     }
 
-    pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-        // Mutate each neuron
-        self.neurons.iter_mut().for_each(|neuron| {
-            neuron.mutate(learning_rate);
-        });
+    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
+    //     // Mutate each neuron
+    //     self.neurons.iter_mut().for_each(|neuron| {
+    //         neuron.mutate(learning_rate);
+    //     });
 
-        // Return the layer
-        self
+    //     // Return the layer
+    //     self
+    // }
+
+    /// Backpropagate errors through the layer and returns the errors for the previous layer
+    pub fn backward(
+        &mut self,
+        inputs: &Inputs,
+        output_errors: &Outputs,
+        learning_rate: f32,
+    ) -> Inputs {
+        let mut input_errors = vec![0.0; inputs.len()];
+
+        // For each neuron in this layer
+        for (neuron, &output_error) in self.neurons.iter_mut().zip(output_errors.iter()) {
+            // Calculate the gradient for this neuron
+            let activation_derivative = sigmoid_derivative(neuron.weight_sum);
+            let gradient = output_error * activation_derivative;
+
+            // Accumulate errors for the previous layer
+            for (i, &weight) in neuron.weights.iter().enumerate() {
+                input_errors[i] += gradient * weight;
+            }
+
+            // Update this neuron's weights and bias
+            neuron.update_weights(inputs, gradient, learning_rate);
+        }
+
+        input_errors
     }
 }
