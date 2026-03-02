@@ -1,6 +1,5 @@
 use crate::{
-    batch::Batch,
-    network::Network,
+    training::batch::Batch,
     types::{Dataset, NetworkConfig},
 };
 use console::style;

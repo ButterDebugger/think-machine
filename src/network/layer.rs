@@ -1,5 +1,6 @@
 use crate::{
-    neuron::{Neuron, sigmoid_derivative},
+    math::sigmoid_derivative,
+    network::neuron::Neuron,
     types::{Inputs, Outputs},
 };
 

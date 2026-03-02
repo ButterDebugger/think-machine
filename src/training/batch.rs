@@ -1,5 +1,5 @@
 use crate::{
-    network::Network,
+    network::network::Network,
     types::{Dataset, NetworkConfig},
 };
 

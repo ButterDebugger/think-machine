@@ -1,11 +1,9 @@
-use crate::trainer::Trainer;
+use crate::training::trainer::Trainer;
 use std::vec;
 
-mod batch;
-mod layer;
+mod math;
 mod network;
-mod neuron;
-mod trainer;
+mod training;
 mod types;
 
 fn main() {
