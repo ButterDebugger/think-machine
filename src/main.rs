@@ -1,8 +1,9 @@
-use crate::training::{backpropagation::Backpropagation, trainer::Trainer};
+use crate::backpropagation::Backpropagation;
 use model::types::NetworkConfig;
 use std::vec;
+use training::trainer::Trainer;
 
-mod training;
+mod backpropagation;
 
 fn main() {
     let mut trainer = Trainer::new(

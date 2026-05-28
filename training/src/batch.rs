@@ -19,18 +19,12 @@ impl Batch {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FittedBatch {
     top_networks: Vec<(f32, Network)>,
 }
 
 impl FittedBatch {
-    pub fn new() -> Self {
-        Self {
-            top_networks: Vec::new(),
-        }
-    }
-
     pub fn add_network(&mut self, fitness: f32, network: Network) {
         // Insert the network into the correct position using binary search
         let insert_pos = match self

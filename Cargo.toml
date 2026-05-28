@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["model"]
+members = ["model", "training"]
 
 [package]
 name = "think-machine"
@@ -8,7 +8,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-console = "0.16.1"
-indicatif = "0.18.0"
 model = { path = "./model" }
-# wgpu = "27.0.1"
+training = { path = "./training" }

@@ -1,12 +1,12 @@
-use crate::training::{
-    batch::{Batch, FittedBatch},
-    trainer::Trainable,
-};
 use model::{
     layer::Layer,
     network::Network,
     neuron::{Neuron, sigmoid_derivative},
     types::{Dataset, Inputs, Outputs},
+};
+use training::{
+    batch::{Batch, FittedBatch},
+    trainer::Trainable,
 };
 
 pub struct Backpropagation {
@@ -25,7 +25,7 @@ impl Backpropagation {
 
 impl Trainable for Backpropagation {
     fn step(&mut self, batch: &Batch) -> FittedBatch {
-        let mut fitted_batch = FittedBatch::new();
+        let mut fitted_batch = FittedBatch::default();
 
         // Train each network on all training data
         for network in &batch.networks {

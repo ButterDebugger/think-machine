@@ -1,4 +1,4 @@
-use crate::training::batch::{Batch, FittedBatch};
+use crate::batch::{Batch, FittedBatch};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 use model::types::NetworkConfig;
