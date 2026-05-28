@@ -56,7 +56,7 @@ impl Trainable for Backpropagation {
             fitness /= self.training_data.len() as f32;
 
             // Add the network and its fitness to the fitted batch
-            fitted_batch.add_network(fitness, network.clone());
+            fitted_batch.add_network(fitness, network);
         }
 
         fitted_batch

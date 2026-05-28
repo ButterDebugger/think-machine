@@ -1,4 +1,4 @@
-use crate::backpropagation::Backpropagation;
+use crate::{backpropagation::Backpropagation, mutation::Mutation};
 use model::types::NetworkConfig;
 use std::vec;
 use training::trainer::Trainer;
@@ -14,7 +14,16 @@ fn main() {
             hidden_layer_sizes: vec![3, 4, 3],
             output_size: 8,
         },
-        Backpropagation::new(
+        // Backpropagation::new(
+        //     0.3,
+        //     vec![
+        //         (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
+        //         (vec![0.0, 1.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]),
+        //         (vec![1.0, 0.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]),
+        //         (vec![1.0, 1.0], vec![1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]),
+        //     ],
+        // ),
+        Mutation::new(
             0.3,
             vec![
                 (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
