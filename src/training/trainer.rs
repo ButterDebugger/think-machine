@@ -1,71 +1,29 @@
-use crate::{
-    training::batch::Batch,
-    types::{Dataset, NetworkConfig},
-};
+use crate::training::batch::{Batch, FittedBatch};
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
+use model::types::NetworkConfig;
 use std::time::Instant;
 
-#[derive(Debug, Clone)]
-pub struct Trainer {
-    batch_size: u64,
-    learning_rate: f32,
-    training_data: Dataset,
-    current_fitness: f32,
-    pub batch: Batch,
+pub trait Trainable {
+    fn step(&mut self, batch: &Batch) -> FittedBatch;
 }
 
-impl Trainer {
-    pub fn new(
-        batch_size: u64,
-        learning_rate: f32,
-        network_config: NetworkConfig,
-        training_data: Dataset,
-    ) -> Trainer {
+pub struct Trainer<T: Trainable> {
+    batch_size: u64,
+    batch: Batch,
+    strategy: T,
+}
+
+impl<T: Trainable> Trainer<T> {
+    pub fn new(batch_size: u64, network_config: NetworkConfig, strategy: T) -> Trainer<T> {
         Trainer {
             batch_size,
-            learning_rate,
-            training_data,
-            current_fitness: f32::MAX,
-            batch: Batch::new_with_population(batch_size, network_config),
+            batch: Batch::with_population(batch_size, network_config),
+            strategy,
         }
     }
 
-    fn step(&mut self) {
-        // Train each network on all training data
-        for network in &mut self.batch.networks {
-            for (inputs, expected) in &self.training_data {
-                network.backward(inputs.clone(), expected.clone(), self.learning_rate);
-            }
-        }
-
-        // Evaluate fitness of the batch
-        let fitted_batch = self.batch.eval_fitness(self.training_data.clone());
-
-        // Update the current fitness (best network's fitness)
-        self.current_fitness = fitted_batch[0].0;
-
-        // // Create a new batch with the top half of the batch and their mutations
-        // let top_count = (self.batch_size / 2) as usize;
-        // let mutate_count = self.batch_size as usize - top_count;
-
-        // let mut new_networks: Vec<Network> = fitted_batch
-        //     .iter()
-        //     .take(top_count)
-        //     .map(|(_, network)| network.clone())
-        //     .collect();
-
-        // new_networks.extend(fitted_batch.iter().take(mutate_count).map(|(_, network)| {
-        //     let mut cloned = network.clone();
-        //     cloned.mutate(self.learning_rate);
-        //     cloned
-        // }));
-
-        // // Store the new batch of networks
-        // self.batch = Batch::new_with_networks(new_networks);
-    }
-
-    fn epoch(&mut self, steps: u64) {
+    fn epoch(&mut self, steps: u64) -> FittedBatch {
         let sty =
             ProgressStyle::with_template("[{elapsed_precise}] {bar:30.cyan/blue} {pos}/{len} ")
                 .unwrap()
@@ -73,49 +31,100 @@ impl Trainer {
         let progress = ProgressBar::new(steps);
         progress.set_style(sty);
 
-        for _ in 0..steps {
-            // Step the batch
-            self.step();
+        // First step
+        let mut fitted_batch = self.strategy.step(&self.batch);
 
-            // Update the progress bar
+        self.batch = fitted_batch.clone().into();
+
+        progress.inc(1);
+
+        // Remaining steps
+        for _ in 1..steps {
+            fitted_batch = self.strategy.step(&self.batch);
+
+            self.batch = fitted_batch.clone().into();
+
             progress.inc(1);
         }
 
+        // Finish the progress bar
         progress.finish_and_clear();
+
+        // Return the final fitted batch
+        fitted_batch
     }
 
-    pub fn train(&mut self, epochs: u64, steps: u64) {
-        let mut last_fitness = self.current_fitness;
+    pub fn train(&mut self, epochs: u64, steps: u64) -> FittedBatch {
+        // First epoch
+        let now = Instant::now();
+        let mut fitted_batch = self.epoch(steps);
+        let mut last_fitness = fitted_batch.get_best_fitness().unwrap_or(f32::MAX);
 
-        for i in 0..epochs {
+        Self::print_epoch_stats(
+            1,
+            epochs,
+            steps,
+            now.elapsed().as_secs_f32(),
+            last_fitness,
+            f32::MAX,
+        );
+
+        // Remaining epochs
+        for epoch in 1..epochs {
             let now = Instant::now();
-            self.epoch(steps);
-            let elapsed = now.elapsed();
 
-            println!(
-                "Epoch {}/{} \tRate {}/s \tFitness {} {}",
-                i + 1,
+            fitted_batch = self.epoch(steps);
+
+            let elapsed = now.elapsed().as_secs_f32();
+
+            let current_fitness = fitted_batch.get_best_fitness().unwrap_or(last_fitness);
+
+            Self::print_epoch_stats(
+                epoch + 1,
                 epochs,
-                steps as f32 / elapsed.as_secs_f32(),
-                self.current_fitness,
-                if last_fitness > self.current_fitness {
-                    style(format!(
-                        "-{:.2}%",
-                        (1.0 - self.current_fitness / last_fitness) * 100.0
-                    ))
-                    .green()
-                } else if last_fitness == self.current_fitness {
-                    style("±0.00%".to_string()).yellow()
-                } else {
-                    style(format!(
-                        "+{:.2}%",
-                        (self.current_fitness / last_fitness - 1.0) * 100.0
-                    ))
-                    .red()
-                }
+                steps,
+                elapsed,
+                current_fitness,
+                last_fitness,
             );
 
-            last_fitness = self.current_fitness;
+            last_fitness = current_fitness;
         }
+
+        fitted_batch
+    }
+
+    fn print_epoch_stats(
+        epoch: u64,
+        epochs: u64,
+        steps: u64,
+        elapsed_secs: f32,
+        current_fitness: f32,
+        last_fitness: f32,
+    ) {
+        let delta = if last_fitness > current_fitness {
+            style(format!(
+                "-{:.2}%",
+                (1.0 - current_fitness / last_fitness) * 100.0
+            ))
+            .green()
+        } else if last_fitness == current_fitness {
+            style("±0.00%".to_string()).yellow()
+        } else {
+            style(format!(
+                "+{:.2}%",
+                (current_fitness / last_fitness - 1.0) * 100.0
+            ))
+            .red()
+        };
+
+        println!(
+            "Epoch {}/{} \tRate {:.2}/s \tFitness {} {}",
+            epoch,
+            epochs,
+            steps as f32 / elapsed_secs,
+            current_fitness,
+            delta
+        );
     }
 }

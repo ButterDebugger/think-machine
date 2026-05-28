@@ -1,27 +1,30 @@
-use crate::training::trainer::Trainer;
+use crate::training::{backpropagation::Backpropagation, trainer::Trainer};
+use model::types::NetworkConfig;
 use std::vec;
 
-mod math;
-mod network;
 mod training;
-mod types;
 
 fn main() {
     let mut trainer = Trainer::new(
         100,
-        0.3,
-        (2, vec![3, 4, 3], 8),
-        vec![
-            (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
-            (vec![0.0, 1.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]),
-            (vec![1.0, 0.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]),
-            (vec![1.0, 1.0], vec![1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]),
-        ],
+        NetworkConfig {
+            input_size: 2,
+            hidden_layer_sizes: vec![3, 4, 3],
+            output_size: 8,
+        },
+        Backpropagation::new(
+            0.3,
+            vec![
+                (vec![0.0, 0.0], vec![0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0]),
+                (vec![0.0, 1.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]),
+                (vec![1.0, 0.0], vec![0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0]),
+                (vec![1.0, 1.0], vec![1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0]),
+            ],
+        ),
     );
 
-    trainer.train(50, 100);
-
-    let model = trainer.batch.networks[0].clone();
+    let fitted_batch = trainer.train(50, 100);
+    let model = fitted_batch.get_best_network().unwrap();
 
     println!();
     println!("Model {:#?}", model);
