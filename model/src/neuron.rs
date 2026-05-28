@@ -31,7 +31,7 @@ impl Neuron {
         }
     }
 
-    pub fn forward(&mut self, inputs: Inputs) -> f32 {
+    pub fn forward(&mut self, inputs: &Inputs) -> f32 {
         // Calculate the weight sum and cache it
         let weight_sum = inputs
             .iter()

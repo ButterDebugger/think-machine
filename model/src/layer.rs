@@ -25,7 +25,7 @@ impl Layer {
     pub fn forward(&mut self, inputs: Inputs) -> Outputs {
         self.neurons
             .iter_mut()
-            .map(|neuron| neuron.forward(inputs.clone()))
+            .map(|neuron| neuron.forward(&inputs))
             .collect()
     }
 
