@@ -50,20 +50,6 @@ impl Neuron {
         // Return the activation value
         activation
     }
-
-    // /// Mutates the neuron with random weights and bias
-    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-    //     // Mutate the weights
-    //     self.weights.iter_mut().for_each(|weight| {
-    //         *weight += (rand::random::<f32>() - 0.5) * learning_rate;
-    //     });
-
-    //     // Mutate the bias
-    //     self.bias += (rand::random::<f32>() - 0.5) * learning_rate;
-
-    //     // Return the neuron
-    //     self
-    // }
 }
 
 /// Sigmoid activation function

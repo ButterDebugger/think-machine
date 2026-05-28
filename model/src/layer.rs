@@ -28,14 +28,4 @@ impl Layer {
             .map(|neuron| neuron.forward(&inputs))
             .collect()
     }
-
-    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-    //     // Mutate each neuron
-    //     self.neurons.iter_mut().for_each(|neuron| {
-    //         neuron.mutate(learning_rate);
-    //     });
-
-    //     // Return the layer
-    //     self
-    // }
 }

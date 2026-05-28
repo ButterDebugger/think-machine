@@ -5,7 +5,8 @@ use model::types::NetworkConfig;
 use std::time::Instant;
 
 pub trait Trainable {
-    fn step(&mut self, batch: &Batch) -> FittedBatch;
+    fn step(&mut self, batch: &mut Batch);
+    fn eval_batch_fitness(&self, batch: &Batch) -> FittedBatch;
 }
 
 pub struct Trainer<T: Trainable> {
@@ -23,7 +24,7 @@ impl<T: Trainable> Trainer<T> {
         }
     }
 
-    fn epoch(&mut self, steps: u64) -> FittedBatch {
+    fn epoch(&mut self, steps: u64) {
         let sty =
             ProgressStyle::with_template("[{elapsed_precise}] {bar:30.cyan/blue} {pos}/{len} ")
                 .unwrap()
@@ -31,51 +32,30 @@ impl<T: Trainable> Trainer<T> {
         let progress = ProgressBar::new(steps);
         progress.set_style(sty);
 
-        // First step
-        let mut fitted_batch = self.strategy.step(&self.batch);
-
-        self.batch = fitted_batch.clone().into();
-
-        progress.inc(1);
-
-        // Remaining steps
-        for _ in 1..steps {
-            fitted_batch = self.strategy.step(&self.batch);
-
-            self.batch = fitted_batch.clone().into();
+        // Run the training steps
+        for _ in 0..steps {
+            self.strategy.step(&mut self.batch);
 
             progress.inc(1);
         }
 
         // Finish the progress bar
         progress.finish_and_clear();
-
-        // Return the final fitted batch
-        fitted_batch
     }
 
     pub fn train(&mut self, epochs: u64, steps: u64) -> FittedBatch {
-        // First epoch
-        let now = Instant::now();
-        let mut fitted_batch = self.epoch(steps);
-        let mut last_fitness = fitted_batch.get_best_fitness().unwrap_or(f32::MAX);
+        let mut last_fitness = f32::MAX;
 
-        Self::print_epoch_stats(
-            1,
-            epochs,
-            steps,
-            now.elapsed().as_secs_f32(),
-            last_fitness,
-            f32::MAX,
-        );
-
-        // Remaining epochs
-        for epoch in 1..epochs {
+        for epoch in 0..epochs {
+            // Track the time taken for the epoch
             let now = Instant::now();
 
-            fitted_batch = self.epoch(steps);
+            self.epoch(steps);
 
             let elapsed = now.elapsed().as_secs_f32();
+
+            // Evaluate the fitness of the batch
+            let fitted_batch = self.strategy.eval_batch_fitness(&self.batch);
 
             let current_fitness = fitted_batch.get_best_fitness().unwrap_or(last_fitness);
 
@@ -91,7 +71,8 @@ impl<T: Trainable> Trainer<T> {
             last_fitness = current_fitness;
         }
 
-        fitted_batch
+        // Return a fitted batch
+        self.strategy.eval_batch_fitness(&self.batch)
     }
 
     fn print_epoch_stats(

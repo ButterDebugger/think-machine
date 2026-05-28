@@ -61,17 +61,4 @@ impl Network {
 
         self.output_layer.forward(outputs)
     }
-
-    // pub fn mutate(&mut self, learning_rate: f32) -> &mut Self {
-    //     // Mutate the hidden layers
-    //     self.hidden_layers.iter_mut().for_each(|layer| {
-    //         layer.mutate(learning_rate);
-    //     });
-
-    //     // Mutate the output layer
-    //     self.output_layer.mutate(learning_rate);
-
-    //     // Return the network
-    //     self
-    // }
 }

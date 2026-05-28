@@ -54,14 +54,14 @@ impl FittedBatch {
     }
 }
 
-impl From<FittedBatch> for Batch {
-    fn from(val: FittedBatch) -> Self {
-        Batch {
-            networks: val
-                .top_networks
-                .into_iter()
-                .map(|(_, network)| network)
-                .collect(),
-        }
-    }
-}
+// impl From<FittedBatch> for Batch {
+//     fn from(val: FittedBatch) -> Self {
+//         Batch {
+//             networks: val
+//                 .top_networks
+//                 .into_iter()
+//                 .map(|(_, network)| network)
+//                 .collect(),
+//         }
+//     }
+// }

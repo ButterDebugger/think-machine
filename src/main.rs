@@ -4,6 +4,7 @@ use std::vec;
 use training::trainer::Trainer;
 
 mod backpropagation;
+mod mutation;
 
 fn main() {
     let mut trainer = Trainer::new(

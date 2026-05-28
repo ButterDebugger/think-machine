@@ -24,44 +24,43 @@ impl Backpropagation {
 }
 
 impl Trainable for Backpropagation {
-    fn step(&mut self, batch: &Batch) -> FittedBatch {
-        let mut fitted_batch = FittedBatch::default();
-
-        // Train each network on all training data
-        for network in &batch.networks {
-            let mut network = network.clone();
-
+    fn step(&mut self, batch: &mut Batch) {
+        // Backpropagate each network in the batch
+        for network in &mut batch.networks {
+            // Train the network on all the training data
             for (inputs, expected) in &self.training_data {
                 backpropagate_network(
-                    &mut network,
+                    network,
                     inputs.clone(),
                     expected.clone(),
                     self.learning_rate,
                 );
             }
+        }
+    }
 
-            // Evaluate the fitness of the network
-            let fitness = eval_fitness(&mut network, self.training_data.clone());
+    fn eval_batch_fitness(&self, batch: &Batch) -> FittedBatch {
+        let mut fitted_batch = FittedBatch::default();
 
-            fitted_batch.add_network(fitness, network);
+        for network in &batch.networks {
+            let mut fitness = 0.0;
+            let mut network = network.clone();
+
+            for (inputs, expected) in self.training_data.iter() {
+                let actual = network.forward(inputs.clone());
+
+                fitness += cost(expected.to_vec(), actual);
+            }
+
+            // Average the fitness
+            fitness /= self.training_data.len() as f32;
+
+            // Add the network and its fitness to the fitted batch
+            fitted_batch.add_network(fitness, network.clone());
         }
 
         fitted_batch
     }
-}
-
-/// Calculates the fitness of the network
-fn eval_fitness(network: &mut Network, training_data: Dataset) -> f32 {
-    let mut fitness = 0.0;
-
-    for (inputs, expected) in training_data.iter() {
-        let actual = network.forward(inputs.clone());
-
-        fitness += cost(expected.to_vec(), actual);
-    }
-
-    // Return the average fitness
-    fitness / training_data.len() as f32
 }
 
 /// Backpropagate errors through the network and updates weights and biases
